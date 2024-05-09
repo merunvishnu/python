@@ -1,0 +1,90 @@
+class Exercise:
+    def __init__(self, name, exercise_type):
+        self.name = name
+        self.type = exercise_type
+        self.sets = []
+
+    def add_set(self, reps, weight=None, distance=None, duration=None):
+        if self.type == "strength":
+            self.sets.append((reps, weight))
+        elif self.type == "cardio":
+            self.sets.append((distance, duration))
+
+    def total_volume(self):
+        if self.type == "strength":
+            return sum(reps * weight for reps, weight in self.sets)
+        elif self.type == "cardio":
+            return sum(distance for distance, _ in self.sets)
+
+    def average_intensity(self):
+        if self.type == "strength":
+            total_reps = sum(reps for reps, _ in self.sets)
+            total_weight = sum(weight for _, weight in self.sets)
+            return total_weight / total_reps if total_reps > 0 else 0
+        elif self.type == "cardio":
+            total_duration = sum(duration for _, duration in self.sets)
+            return sum(distance / total_duration for distance, _ in self.sets) if total_duration > 0 else 0
+
+
+class Workout:
+    def __init__(self, date):
+        self.date = date
+        self.exercises = []
+
+    def add_exercise(self, exercise):
+        self.exercises.append(exercise)
+
+    def total_workout_volume(self):
+        return sum(exercise.total_volume() for exercise in self.exercises)
+
+    def average_workout_intensity(self):
+        total_volume = sum(exercise.total_volume() for exercise in self.exercises)
+        total_intensity = sum(exercise.average_intensity() * exercise.total_volume() for exercise in self.exercises)
+        return total_intensity / total_volume if total_volume > 0 else 0
+
+
+class FitnessTracker:
+    def __init__(self):
+        self.workouts = []
+
+    def add_workout(self, workout):
+        self.workouts.append(workout)
+
+    def display_workouts(self):
+        for i, workout in enumerate(self.workouts, start=1):
+            print(f"Workout {i}: {workout.date}")
+            for exercise in workout.exercises:
+                print(f"  {exercise.name}:")
+                for set_num, set_data in enumerate(exercise.sets, start=1):
+                    if exercise.type == "strength":
+                        reps, weight = set_data
+                        print(f"    Set {set_num}: {reps} reps at {weight} lbs")
+                    elif exercise.type == "cardio":
+                        distance, duration = set_data
+                        print(f"    Set {set_num}: {distance} miles in {duration} minutes")
+            print(f"  Total Workout Volume: {workout.total_workout_volume()} units")
+            print(f"  Average Workout Intensity: {workout.average_workout_intensity()} intensity units per rep or mile")
+
+
+if __name__ == "__main__":
+    tracker = FitnessTracker()
+
+    workout1 = Workout("2024-05-10")
+    workout1.add_exercise(Exercise("Squats", "strength"))
+    workout1.exercises[0].add_set(10, 135)
+    workout1.exercises[0].add_set(8, 185)
+
+    workout2 = Workout("2024-05-12")
+    workout2.add_exercise(Exercise("Bench Press", "strength"))
+    workout2.exercises[0].add_set(8, 135)
+    workout2.exercises[0].add_set(6, 185)
+
+    workout3 = Workout("2024-05-15")
+    workout3.add_exercise(Exercise("Running", "cardio"))
+    workout3.exercises[0].add_set(3, None, 2.5, 20)  # 2.5 miles in 20 minutes
+
+    tracker.add_workout(workout1)
+    tracker.add_workout(workout2)
+    tracker.add_workout(workout3)
+
+    tracker.display_workouts()
